@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gorurgari | Request a cow or a horse</title>
+<meta name="description" content="gorurgari sends a rider with a cow or a horse to pick you up and take you where you're going.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%84%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hind+Siliguri:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#000;
+  --paper:#fff;
+  --mist:#f4f4f1;
+  --line:#e2e2dd;
+  --muted:#585853;
+  --field:#0f7a45;
+  --hay:#ffd24a;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0;font-weight:700;line-height:1.05;letter-spacing:-0.02em}
+p{margin:0}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+:focus-visible{outline:3px solid #1a73e8;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:999px;padding:13px 22px;
+  font:inherit;font-weight:600;font-size:1rem;cursor:pointer;text-decoration:none;
+  transition:background-color .15s ease;
+}
+.btn-dark{background:#000;color:#fff}
+.btn-dark:hover{background:#2b2b2b}
+.btn-light{background:#fff;color:#000}
+.btn-light:hover{background:#e4e4e4}
+.btn-plain{background:transparent;color:#fff;padding-left:12px;padding-right:12px}
+.btn-plain:hover{background:#222}
+.btn-block{width:100%;border-radius:8px;padding:15px 22px}
+
+/* Header */
+.site-header{background:#000;color:#fff;position:sticky;top:0;z-index:20}
+.nav{display:flex;align-items:center;gap:36px;height:64px}
+.logo{font-weight:800;font-size:1.55rem;letter-spacing:-0.035em;text-decoration:none;color:#fff}
+.nav-links{display:flex;gap:6px}
+.nav-links a{color:#fff;text-decoration:none;padding:8px 12px;border-radius:999px;font-weight:500}
+.nav-links a:hover{background:#222}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.menu-toggle{display:none;background:transparent;border:0;color:#fff;font:inherit;font-weight:600;padding:8px 10px;cursor:pointer;border-radius:999px}
+
+/* Hero */
+.hero{padding:56px 0 80px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:center}
+.hero h1{font-size:clamp(2.7rem,6.2vw,4.8rem)}
+.lead{margin-top:20px;font-size:1.2rem;color:var(--muted);max-width:36ch}
+.bn{margin-top:10px;font-family:'Hind Siliguri','Bricolage Grotesque',sans-serif;font-weight:700;font-size:1.15rem;color:var(--field)}
+
+.request{margin-top:30px;max-width:470px}
+.field{position:relative;margin-bottom:10px}
+.field input,.field select{
+  width:100%;font:inherit;font-size:1rem;color:var(--ink);
+  background:var(--mist);border:2px solid transparent;border-radius:8px;
+  padding:14px 16px 14px 48px;
+}
+.field select{appearance:none;padding-left:48px;cursor:pointer}
+.field input:focus,.field select:focus{outline:none;border-color:#000;background:#fff}
+.field::before{content:"";position:absolute;left:19px;top:50%;transform:translateY(-50%);pointer-events:none}
+.field.pickup::before{width:10px;height:10px;border-radius:50%;background:#000}
+.field.dest::before{width:10px;height:10px;background:#000}
+.field.when::before{width:12px;height:12px;border:2px solid #000;border-radius:50%}
+.field.when::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid #000;border-bottom:2px solid #000;transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.linkish{background:none;border:0;padding:0;font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin:2px 0 14px}
+.chips{display:flex;gap:8px;margin:4px 0 16px;flex-wrap:wrap}
+.chips legend{font-weight:600;margin-bottom:8px;padding:0}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-block;padding:9px 18px;border-radius:999px;background:var(--mist);font-weight:600;cursor:pointer}
+.chip input:checked + span{background:#000;color:#fff}
+.chip:has(input:focus-visible){outline:3px solid #1a73e8;outline-offset:2px;border-radius:999px}
+.form-note{margin-top:10px;min-height:1.5em;color:#a3200f;font-weight:500}
+
+/* Results */
+.results{margin-top:26px;max-width:470px}
+.results[hidden]{display:none}
+.results h2{font-size:1.3rem}
+.results .trip{color:var(--muted);margin:4px 0 12px}
+.result-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.result{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.result .em{font-size:2rem;line-height:1;text-align:center}
+.result b{display:block;font-weight:700}
+.result small{color:var(--muted);font-size:.9rem}
+.result .fare{text-align:right;font-weight:700;font-size:1.1rem}
+.result .btn{padding:8px 16px;font-size:.9rem;margin-top:6px}
+.result-status{margin-top:14px;padding:12px 14px;background:var(--hay);border-radius:8px;font-weight:500}
+.result-status[hidden]{display:none}
+.sample{margin-top:12px;color:var(--muted);font-size:.9rem}
+
+/* Live map */
+.map-card{position:relative;border-radius:20px;overflow:hidden;background:#e9efe6;border:1px solid var(--line)}
+.map-card svg{width:100%;height:auto}
+.eta-card{
+  position:absolute;left:16px;right:16px;bottom:16px;
+  background:#fff;border-radius:12px;padding:14px 16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.18);
+}
+.eta-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.eta-top b{font-size:1.05rem}
+.eta-top span{font-weight:700;font-size:1.05rem}
+.eta-sub{color:var(--muted);font-size:.92rem;margin-top:2px}
+.bar{height:4px;background:var(--line);border-radius:4px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:30%;background:#000;border-radius:4px}
+
+/* Sections */
+.section{padding:96px 0}
+.section h2{font-size:clamp(2rem,4.2vw,3rem)}
+.section .intro{margin-top:14px;color:var(--muted);font-size:1.1rem;max-width:44ch}
+
+/* Ride options */
+.rides-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:64px;align-items:start}
+.rides-intro{position:sticky;top:96px}
+.ride-list{list-style:none;margin:0;padding:0;border-top:2px solid #000}
+.ride-row{display:grid;grid-template-columns:84px 1fr auto;gap:20px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+.ride-row .tile{width:84px;height:84px;border-radius:var(--radius);background:var(--mist);display:grid;place-items:center;font-size:2.6rem}
+.ride-row h3{font-size:1.35rem}
+.ride-row p{color:var(--muted);margin-top:4px;max-width:44ch}
+.ride-row .meta{margin-top:6px;font-weight:600;font-size:.95rem}
+.ride-row .price{text-align:right;font-weight:700;white-space:nowrap}
+.ride-row .price small{display:block;color:var(--muted);font-weight:500}
+
+/* Steps */
+.steps{background:var(--mist)}
+.step-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;margin-top:48px}
+.step{border-top:2px solid #000;padding-top:20px}
+.step .n{font-size:3.6rem;font-weight:800;letter-spacing:-0.04em;line-height:1}
+.step h3{font-size:1.4rem;margin-top:18px}
+.step p{margin-top:8px;color:var(--muted);max-width:34ch}
+
+/* Safety */
+.safety{background:#000;color:#fff}
+.safety .intro{color:#c9c9c4}
+.safety-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:64px}
+.safety-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
+.safety-list div{border-top:1px solid #4a4a46;padding:22px 0 30px}
+.safety-list h3{font-size:1.25rem}
+.safety-list p{margin-top:8px;color:#c9c9c4}
+
+/* Split */
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.panel{background:var(--mist);border-radius:20px;padding:40px;display:flex;flex-direction:column;align-items:flex-start;gap:14px;min-height:280px}
+.panel h3{font-size:1.9rem}
+.panel p{color:var(--muted);max-width:36ch}
+.panel .btn{margin-top:auto}
+.panel .big{font-size:3rem;line-height:1}
+
+/* Cities */
+.cities{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:64px;align-items:start}
+.city-list{list-style:none;margin:0;padding:0;border-top:2px solid #000}
+.city-list li{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--line);font-size:1.3rem;font-weight:600}
+.pill{font-size:.85rem;font-weight:600;background:var(--hay);padding:4px 12px;border-radius:999px}
+
+/* FAQ */
+.faq{background:var(--mist)}
+.faq-list{margin-top:36px;max-width:820px;border-top:2px solid #000}
+.faq details{border-bottom:1px solid #cfcfc9}
+.faq summary{list-style:none;cursor:pointer;padding:22px 40px 22px 0;font-size:1.25rem;font-weight:600;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:1.8rem;font-weight:400}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{padding:0 40px 24px 0;color:var(--muted);max-width:64ch}
+
+/* Footer */
+.site-footer{background:#000;color:#fff;padding:72px 0 40px}
+.footer-top{display:grid;grid-template-columns:minmax(0,3fr) repeat(3,minmax(0,2fr));gap:40px}
+.site-footer .logo{font-size:2rem}
+.site-footer p.tag{margin-top:12px;color:#c9c9c4;max-width:30ch}
+.site-footer h4{margin:0 0 14px;font-size:1rem}
+.site-footer ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.site-footer li a{color:#c9c9c4;text-decoration:none}
+.site-footer li a:hover{color:#fff;text-decoration:underline}
+.footer-bottom{margin-top:56px;padding-top:24px;border-top:1px solid #333;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#c9c9c4;font-size:.95rem}
+.footer-bottom nav{display:flex;gap:20px}
+.footer-bottom a{text-decoration:none}
+.footer-bottom a:hover{text-decoration:underline;color:#fff}
+
+/* Responsive */
+@media (max-width:960px){
+  .hero-grid,.rides-grid,.safety-grid,.cities{grid-template-columns:minmax(0,1fr);gap:40px}
+  .rides-intro{position:static}
+  .step-grid{grid-template-columns:minmax(0,1fr);gap:32px}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .footer-top{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .section{padding:72px 0}
+}
+@media (max-width:720px){
+  .nav{gap:12px}
+  .menu-toggle{display:inline-block}
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:#000;flex-direction:column;padding:8px 24px 20px;border-top:1px solid #222}
+  .nav-links.open{display:flex}
+  .nav-right .btn-plain{display:none}
+  .nav-right{margin-left:auto}
+  .safety-list{grid-template-columns:minmax(0,1fr)}
+  .ride-row{grid-template-columns:64px 1fr;gap:16px}
+  .ride-row .tile{width:64px;height:64px;font-size:2rem}
+  .ride-row .price{grid-column:2;text-align:left}
+  .panel{padding:28px}
+  .hero{padding:36px 0 56px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="logo" href="#top" aria-label="gorurgari home">gorurgari</a>
+    <nav class="nav-links" id="nav-links" aria-label="Main">
+      <a href="#rides">Ride</a>
+      <a href="#give-rides">Give rides</a>
+      <a href="#safety">Safety</a>
+      <a href="#help">Help</a>
+    </nav>
+    <div class="nav-right">
+      <a class="btn btn-plain" href="#top">Log in</a>
+      <a class="btn btn-light" href="#top">Sign up</a>
+      <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Call a cow. Call a horse. Get there.</h1>
+      <p class="lead">Your gorurgari rider comes to your door with a cow or a horse and takes you where you're going.</p>
+      <p class="bn" lang="bn">গরুর গাড়ি, এখন এক ট্যাপে</p>
+
+      <form class="request" id="request-form" novalidate>
+        <div class="field pickup">
+          <label class="visually-hidden" for="pickup">Pickup location</label>
+          <input id="pickup" name="pickup" type="text" placeholder="Pickup location" autocomplete="off">
+        </div>
+        <button type="button" class="linkish" id="use-location">Use current location</button>
+        <div class="field dest">
+          <label class="visually-hidden" for="dest">Destination</label>
+          <input id="dest" name="dest" type="text" placeholder="Where to?" autocomplete="off">
+        </div>
+        <div class="field when">
+          <label class="visually-hidden" for="when">Pickup time</label>
+          <select id="when" name="when">
+            <option>Pickup now</option>
+            <option>In 30 minutes</option>
+            <option>In 1 hour</option>
+            <option>Tomorrow morning</option>
+          </select>
+        </div>
+        <fieldset class="chips">
+          <legend>Ride with</legend>
+          <label class="chip"><input type="radio" name="animal" value="any" checked><span>Any</span></label>
+          <label class="chip"><input type="radio" name="animal" value="cow"><span>Cow</span></label>
+          <label class="chip"><input type="radio" name="animal" value="horse"><span>Horse</span></label>
+        </fieldset>
+        <button class="btn btn-dark btn-block" type="submit">See prices</button>
+        <p class="form-note" id="form-note" role="alert"></p>
+      </form>
+
+      <section class="results" id="results" hidden aria-live="polite">
+        <h2>Rides for you</h2>
+        <p class="trip" id="trip-summary"></p>
+        <ul class="result-list" id="result-list"></ul>
+        <p class="result-status" id="result-status" hidden></p>
+        <p class="sample">Prices and times are samples for this preview.</p>
+      </section>
+    </div>
+
+    <div class="map-card" aria-label="Preview of live ride tracking">
+      <svg viewBox="0 0 520 600" role="img" aria-label="Map showing a rider on a cow heading to a pickup point">
+        <rect width="520" height="600" fill="#e9efe6"/>
+        <g>
+          <rect x="-20" y="20" width="170" height="110" fill="#dfe8da" transform="rotate(-6 60 70)"/>
+          <rect x="180" y="210" width="150" height="120" fill="#f1f3e8" transform="rotate(5 250 270)"/>
+          <rect x="360" y="260" width="190" height="150" fill="#dde7d6" transform="rotate(-4 450 330)"/>
+          <rect x="20" y="300" width="130" height="90" fill="#f1f3e8" transform="rotate(7 80 345)"/>
+          <rect x="330" y="20" width="200" height="90" fill="#e4ecdc" transform="rotate(4 430 65)"/>
+          <rect x="140" y="470" width="190" height="120" fill="#dfe8da" transform="rotate(-5 235 530)"/>
+        </g>
+        <path d="M-10 440 C 110 395, 200 490, 330 445 S 500 395, 540 425" fill="none" stroke="#cfe3ea" stroke-width="30" stroke-linecap="round"/>
+        <g fill="none" stroke="#fff" stroke-linecap="round">
+          <path d="M40 -10 L 125 610" stroke-width="14"/>
+          <path d="M-10 160 C 150 135, 300 195, 540 125" stroke-width="14"/>
+          <path d="M300 -10 C 330 200, 280 400, 365 610" stroke-width="12"/>
+          <path d="M-10 330 C 120 310, 250 360, 540 300" stroke-width="7"/>
+          <path d="M200 -10 L 215 300" stroke-width="6"/>
+        </g>
+        <path id="route" d="M95 540 C 115 440, 95 345, 185 290 S 330 240, 385 150" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 11"/>
+        <g transform="translate(385 150)">
+          <circle r="15" fill="#000"/>
+          <circle r="5" fill="#fff"/>
+        </g>
+        <g transform="translate(300 92)">
+          <rect width="104" height="30" rx="15" fill="#000"/>
+          <text x="52" y="20" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" font-weight="600" fill="#fff">Your pickup</text>
+        </g>
+        <g id="rider" transform="translate(95 540)">
+          <circle r="24" fill="#fff" stroke="#000" stroke-width="3"/>
+          <text y="9" text-anchor="middle" font-size="26">🐄</text>
+        </g>
+      </svg>
+      <div class="eta-card">
+        <div class="eta-top"><b>Rahim is on the way</b><span id="eta">4 min</span></div>
+        <p class="eta-sub">Lal Moti, red cow · Gorur Go</p>
+        <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ride options -->
+<section class="section" id="rides">
+  <div class="wrap rides-grid">
+    <div class="rides-intro">
+      <h2>Pick the animal for the road ahead</h2>
+      <p class="intro">Four ways to travel at the speed of the countryside. Fares are sample prices for this preview.</p>
+    </div>
+    <ul class="ride-list">
+      <li class="ride-row">
+        <div class="tile" aria-hidden="true">🐄</div>
+        <div>
+          <h3>Gorur Go</h3>
+          <p>One cow, a padded seat and a rider who knows the shortcuts.</p>
+          <p class="meta">1–2 riders · about 4 km/h</p>
+        </div>
+        <div class="price">৳30 + ৳18/km<small>sample fare</small></div>
+      </li>
+      <li class="ride-row">
+        <div class="tile" aria-hidden="true">🐎</div>
+        <div>
+          <h3>Ghora Express</h3>
+          <p>A horse at a steady trot, for when you're running a little late.</p>
+          <p class="meta">1 rider · about 12 km/h</p>
+        </div>
+        <div class="price">৳50 + ৳35/km<small>sample fare</small></div>
+      </li>
+      <li class="ride-row">
+        <div class="tile" aria-hidden="true">🐂</div>
+        <div>
+          <h3>Gorur XL</h3>
+          <p>An ox cart with room for the whole family and the market shopping.</p>
+          <p class="meta">Up to 6 riders · luggage fits</p>
+        </div>
+        <div class="price">৳60 + ৳28/km<small>sample fare</small></div>
+      </li>
+      <li class="ride-row">
+        <div class="tile" aria-hidden="true">🐴</div>
+        <div>
+          <h3>Ghora Gari</h3>
+          <p>A covered horse cart for small groups and wet weather.</p>
+          <p class="meta">Up to 3 riders · rain cover</p>
+        </div>
+        <div class="price">৳70 + ৳45/km<small>sample fare</small></div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="section steps" id="how">
+  <div class="wrap">
+    <h2>How gorurgari works</h2>
+    <div class="step-grid">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Request a ride</h3>
+        <p>Enter where you are and where you're going, then choose a cow or a horse.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Meet your rider</h3>
+        <p>Your rider and animal head your way. Follow them live and share the trip with family.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Ride and pay</h3>
+        <p>Sit back and enjoy the view. Pay with mobile banking or cash when you arrive.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Safety -->
+<section class="section safety" id="safety">
+  <div class="wrap safety-grid">
+    <div>
+      <h2>Safe for you and for the animals</h2>
+      <p class="intro">Every ride is built around two things: a comfortable passenger and a healthy animal.</p>
+    </div>
+    <div class="safety-list">
+      <div>
+        <h3>Verified riders</h3>
+        <p>Every rider is checked with a national ID and a short interview before their first trip.</p>
+      </div>
+      <div>
+        <h3>Healthy animals</h3>
+        <p>A vet checks each cow and horse every month, and animals rest between rides.</p>
+      </div>
+      <div>
+        <h3>Share your trip</h3>
+        <p>Send a live link to family so they can follow every kilometre.</p>
+      </div>
+      <div>
+        <h3>Help any time</h3>
+        <p>Call our support line at any hour, from any phone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Give rides / ride -->
+<section class="section" id="give-rides">
+  <div class="wrap split">
+    <div class="panel">
+      <div class="big" aria-hidden="true">🐎</div>
+      <h3>Earn with your cow or horse</h3>
+      <p>Already have a gentle animal? Set your own hours and give rides in your area.</p>
+      <a class="btn btn-dark" href="#top">Become a rider</a>
+    </div>
+    <div class="panel">
+      <div class="big" aria-hidden="true">🐄</div>
+      <h3>Ride with gorurgari</h3>
+      <p>Create a free account and your first ride is a few taps away.</p>
+      <a class="btn btn-dark" href="#top">Sign up to ride</a>
+    </div>
+  </div>
+</section>
+
+<!-- Cities -->
+<section class="section" id="cities" style="padding-top:0">
+  <div class="wrap cities">
+    <div>
+      <h2>Coming to your town</h2>
+      <p class="intro">We're opening city by city, starting with these five.</p>
+    </div>
+    <ul class="city-list">
+      <li>Dhaka <span class="pill">Launching soon</span></li>
+      <li>Rajshahi <span class="pill">Launching soon</span></li>
+      <li>Bogura <span class="pill">Launching soon</span></li>
+      <li>Sylhet <span class="pill">Launching soon</span></li>
+      <li>Cumilla <span class="pill">Launching soon</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq" id="help">
+  <div class="wrap">
+    <h2>Questions, answered</h2>
+    <div class="faq-list">
+      <details>
+        <summary>How fast is a cow?</summary>
+        <p>A cow walks about 4 km/h, so a 4 km trip takes around an hour. A horse at a trot covers about 12 km/h. Choose the animal that suits your schedule.</p>
+      </details>
+      <details>
+        <summary>Can I bring luggage?</summary>
+        <p>Gorur XL carries luggage and market shopping. Gorur Go and Ghora Express carry one small bag.</p>
+      </details>
+      <details>
+        <summary>What happens when it rains?</summary>
+        <p>Ghora Gari and Gorur XL come with rain covers. In heavy storms riders may pause trips, and you won't be charged for a cancelled ride.</p>
+      </details>
+      <details>
+        <summary>When does gorurgari launch?</summary>
+        <p>We're getting ready to launch. This site is a preview, so ride requests don't go anywhere yet.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <a class="logo" href="#top">gorurgari</a>
+        <p class="tag">Rides by cow and horse, one tap away.</p>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#top">About us</a></li>
+          <li><a href="#top">Careers</a></li>
+          <li><a href="#top">News</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Products</h4>
+        <ul>
+          <li><a href="#rides">Ride</a></li>
+          <li><a href="#give-rides">Give rides</a></li>
+          <li><a href="#cities">Cities</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#safety">Safety</a></li>
+          <li><a href="#help">Help centre</a></li>
+          <li><a href="#top">Contact us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 gorurgari</span>
+      <nav aria-label="Legal">
+        <a href="#top">Privacy</a>
+        <a href="#top">Terms</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Mobile menu */
+  var toggle = document.getElementById('menu-toggle');
+  var links = document.getElementById('nav-links');
+  toggle.addEventListener('click', function(){
+    var open = links.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.addEventListener('click', function(e){
+    if (e.target.tagName === 'A') {
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  /* Live rider on the map */
+  var route = document.getElementById('route');
+  var rider = document.getElementById('rider');
+  var eta = document.getElementById('eta');
+  var bar = document.getElementById('bar');
+  var len = route.getTotalLength();
+
+  function place(t){
+    var p = route.getPointAtLength(len * t);
+    rider.setAttribute('transform', 'translate(' + p.x + ' ' + p.y + ')');
+    var mins = Math.max(1, Math.ceil((1 - t) * 4));
+    eta.textContent = mins + ' min';
+    bar.style.width = Math.round(10 + t * 90) + '%';
+  }
+
+  if (reduce) {
+    place(0.45);
+  } else {
+    var start = null, DURATION = 18000;
+    function frame(now){
+      if (start === null) start = now;
+      var raw = ((now - start) % DURATION) / DURATION;
+      var t = raw < 0.9 ? raw / 0.9 : 1;
+      place(t);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* Ride request preview (no backend) */
+  var options = [
+    {name:'Gorur Go',      animal:'cow',   emoji:'🐄', seats:'1–2 riders',  speed:4,  base:30, perKm:18},
+    {name:'Ghora Express', animal:'horse', emoji:'🐎', seats:'1 rider',     speed:12, base:50, perKm:35},
+    {name:'Gorur XL',      animal:'cow',   emoji:'🐂', seats:'Up to 6 riders', speed:3.5, base:60, perKm:28},
+    {name:'Ghora Gari',    animal:'horse', emoji:'🐴', seats:'Up to 3 riders', speed:10, base:70, perKm:45}
+  ];
+
+  var form = document.getElementById('request-form');
+  var note = document.getElementById('form-note');
+  var results = document.getElementById('results');
+  var list = document.getElementById('result-list');
+  var summary = document.getElementById('trip-summary');
+  var status = document.getElementById('result-status');
+
+  document.getElementById('use-location').addEventListener('click', function(){
+    document.getElementById('pickup').value = 'Current location';
+    note.textContent = '';
+  });
+
+  function hash(str){
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var pickup = document.getElementById('pickup').value.trim();
+    var dest = document.getElementById('dest').value.trim();
+    var animal = form.elements['animal'].value;
+
+    if (!pickup || !dest) {
+      note.textContent = 'Enter a pickup location and a destination.';
+      results.hidden = true;
+      return;
+    }
+    note.textContent = '';
+    status.hidden = true;
+
+    var h = hash(dest.toLowerCase());
+    var dist = Math.round((1.5 + (h % 80) / 10) * 10) / 10;
+
+    var shown = options.filter(function(o){ return animal === 'any' || o.animal === animal; });
+    summary.textContent = 'To ' + dest + ' · about ' + dist.toFixed(1) + ' km';
+
+    list.textContent = '';
+    shown.forEach(function(o, i){
+      var minutes = Math.round(dist / o.speed * 60);
+      var fare = Math.round(o.base + o.perKm * dist);
+      var pickupEta = 3 + ((h >> (i + 2)) % 6) + i;
+
+      var li = el('li', 'result');
+      li.appendChild(el('div', 'em', o.emoji));
+
+      var mid = el('div');
+      mid.appendChild(el('b', '', o.name));
+      mid.appendChild(el('small', '', o.seats + ' · ' + pickupEta + ' min away · ' + minutes + ' min trip'));
+      li.appendChild(mid);
+
+      var right = el('div', 'fare', '৳' + fare);
+      var btn = el('button', 'btn btn-dark', 'Choose');
+      btn.type = 'button';
+      btn.addEventListener('click', function(){
+        status.textContent = 'This is a preview. Booking opens when gorurgari launches, so ' + o.name + ' is not on its way yet.';
+        status.hidden = false;
+      });
+      right.appendChild(document.createElement('br'));
+      right.appendChild(btn);
+      li.appendChild(right);
+
+      list.appendChild(li);
+    });
+
+    results.hidden = false;
+    results.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'nearest'});
+  });
+})();
+</script>
+</body>
+</html>
